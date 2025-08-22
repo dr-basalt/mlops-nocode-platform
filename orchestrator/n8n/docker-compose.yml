@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8n/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    environment:
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_HOST=localhost
+      - GENERIC_TIMEZONE=Europe/Paris
+      - N8N_LOG_LEVEL=info
+      # Configuration de la base de données
+      - DB_TYPE=sqlite
+      # Configuration de l'authentification (à personnaliser en production)
+      - N8N_BASIC_AUTH_ACTIVE=false
+      # Configuration de l'API
+      - N8N_API_ENDPOINT=api
+      # Configuration du webhook
+      - N8N_WEBHOOK_URL=https://your-domain.com/webhook
+      # Configuration de l'email (à personnaliser en production)
+      - N8N_EMAIL_MODE=smtp
+      - N8N_SMTP_HOST=smtp.example.com
+      - N8N_SMTP_PORT=587
+      - N8N_SMTP_USER=user@example.com
+      - N8N_SMTP_PASSWORD=password
+      - N8N_SMTP_SSL=true
+      - N8N_SMTP_SENDER=user@example.com
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+      - ./workflows:/home/node/.n8n/workflows
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - n8n-network
+
+  # Service de base de données (optionnel, pour PostgreSQL)
+  # postgres:
+  #   image: postgres:13
+  #   container_name: n8n-postgres
+  #   restart: unless-stopped
+  #   environment:
+  #     - POSTGRES_USER=n8n
+  #     - POSTGRES_PASSWORD=n8npassword
+  #     - POSTGRES_DB=n8n
+  #   volumes:
+  #     - ./postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - n8n-network
+
+networks:
+  n8n-network:
+    driver: bridge
