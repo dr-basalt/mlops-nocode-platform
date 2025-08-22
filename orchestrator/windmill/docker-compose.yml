@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  windmill:
+    image: windmill/windmill:latest
+    container_name: windmill
+    restart: unless-stopped
+    environment:
+      # Configuration de la base de données
+      - DATABASE_URL=postgresql://windmill:windmill@windmill-postgres:5432/windmill
+      # Configuration de l'authentification
+      - JWT_SECRET=super-secret-jwt-key-change-in-production
+      # Configuration de l'interface
+      - BASE_URL=http://localhost:8000
+      # Configuration du mode de déploiement
+      - MODE=standalone
+      # Configuration du nombre de workers
+      - NUM_WORKERS=4
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./windmill_data:/data
+      - ./scripts:/data/scripts
+    networks:
+      - windmill-network
+    depends_on:
+      - windmill-postgres
+
+  windmill-postgres:
+    image: postgres:13
+    container_name: windmill-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=windmill
+      - POSTGRES_PASSWORD=windmill
+      - POSTGRES_DB=windmill
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - windmill-network
+
+networks:
+  windmill-network:
+    driver: bridge
