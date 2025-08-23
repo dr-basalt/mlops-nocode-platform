@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm-proxy
+  labels:
+    app: litellm-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm-proxy
+  template:
+    metadata:
+      labels:
+        app: litellm-proxy
+    spec:
+      containers:
+      - name: litellm-proxy
+        image: ghcr.io/berriai/litellm:main-latest
+        ports:
+        - containerPort: 4000
+        env:
+        - name: LITELLM_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: litellm-secret
+              key: master-key
+        - name: LITELLM_CONFIG_PATH
+          value: "/app/config.yaml"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: config-volume
+        configMap:
+          name: litellm-config
