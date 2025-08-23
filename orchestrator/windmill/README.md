@@ -1,81 +1,91 @@
-# Intégration Windmill pour la plateforme MLOps No-Code
+# Interfaces Windmill pour les Playbooks
 
 ## Description
 
-Cette intégration permet d'utiliser Windmill comme plateforme de scripts et d'orchestration pour la plateforme MLOps No-Code. Windmill est une plateforme open-source pour exécuter des scripts, créer des applications et orchestrer des workflows.
+Ce dossier contient les interfaces Windmill pour la gestion des playbooks et l'assemblage de pipelines. Windmill est utilisé comme plateforme no-code pour orchestrer les déploiements ML.
 
-## Structure du dossier
+## Structure
 
-```
-orchestrator/windmill/
-├── docker-compose.yml    # Fichier Docker Compose pour déployer Windmill
-├── windmill_data/        # Données persistantes de Windmill (générées automatiquement)
-├── postgres_data/        # Données persistantes de PostgreSQL (générées automatiquement)
-├── scripts/              # Dossier contenant les scripts Windmill
-│   └── test-script.py    # Script de test
-└── README.md             # Documentation de l'intégration
-```
+- `apps/` : Applications Windmill.
+- `scripts/` : Scripts Windmill.
+- `flows/` : Flows Windmill.
 
-## Déploiement
+## Applications
 
-### Prérequis
+### ML Pipeline Builder (`apps/ml_pipeline_builder.json`)
 
-- Docker et Docker Compose installés.
+Application pour construire et déployer des pipelines ML de manière visuelle.
 
-### Démarrer Windmill
+**Composants :**
 
-1. Naviguez vers le dossier `orchestrator/windmill/` :
-   ```bash
-   cd orchestrator/windmill/
-   ```
+1.  **Configuration du Pipeline** : Formulaire pour saisir le nom, la description et la plateforme cible du pipeline.
+2.  **Éditeur de Nodes** : Éditeur visuel pour assembler les nodes du pipeline.
+    *   **Source de Données** : Node pour définir la source des données (S3, Base de Données, API).
+    *   **Prétraitement** : Node pour définir les opérations de prétraitement des données.
+    *   **Modèle** : Node pour définir le modèle ML (Entraînement, Fine-tuning, Inférence).
+    *   **Déploiement** : Node pour définir le type de déploiement (Point de terminaison API, Traitement par lots).
 
-2. Démarrez les services avec Docker Compose :
-   ```bash
-   docker-compose up -d
-   ```
+**Actions :**
 
-3. Accédez à l'interface web de Windmill à l'adresse `http://localhost:8000`.
-
-### Arrêter Windmill
-
-Pour arrêter les services :
-```bash
-docker-compose down
-```
+*   **Déployer le Pipeline** : Action pour déclencher le déploiement du pipeline configuré.
 
 ## Scripts
 
-### Script de test
+### Déploiement de Pipeline (`scripts/deploy_pipeline.py`)
 
-Le fichier `scripts/test-script.py` contient plusieurs fonctions de test :
+Script Python pour déployer un pipeline ML.
 
-- `main()`: Fonction de salutation simple.
-- `greet_with_time()`: Salue une personne en fonction de la période de la journée.
-- `calculate_sum()`: Calcule la somme de deux nombres.
-- `process_list()`: Traite une liste d'éléments.
+**Fonctionnalités :**
 
-Ces scripts peuvent être importés dans l'interface web de Windmill pour être exécutés.
+1.  Validation de la configuration du pipeline.
+2.  Génération du code Terraform pour l'infrastructure.
+3.  Déploiement de l'infrastructure via Terraform.
+4.  Retour d'un message de succès ou d'erreur.
 
-## Configuration
+## Flows
 
-Le fichier `docker-compose.yml` contient la configuration de Windmill. Vous pouvez modifier les variables d'environnement pour personnaliser le déploiement :
+### Déploiement de Pipeline ML (`flows/ml_pipeline_deployment.json`)
 
-- `DATABASE_URL` : URL de connexion à la base de données PostgreSQL.
-- `JWT_SECRET` : Clé secrète pour les jetons JWT (à changer en production).
-- `BASE_URL` : URL de base de l'application Windmill.
-- `MODE` : Mode de déploiement (standalone par défaut).
-- `NUM_WORKERS` : Nombre de workers pour l'exécution des scripts.
+Flow pour orchestrer le déploiement d'un pipeline ML.
 
-## Intégration avec l'API Gateway
+**Étapes :**
 
-L'API Gateway FastAPI peut déclencher des scripts Windmill via l'API REST de Windmill. La configuration de l'URL de l'API Windmill se fait dans le fichier `api/fastapi/app/core/config.py` avec la variable `WINDMILL_API_URL`.
+1.  **Validation de la Configuration** : Validation de la configuration du pipeline.
+2.  **Génération de Terraform** : Génération du code Terraform.
+3.  **Déploiement de l'Infrastructure** : Déploiement de l'infrastructure.
+4.  **Déploiement du Pipeline** : Déploiement du pipeline.
+5.  **Notification d'Achèvement** : Notification de l'achèvement du déploiement.
 
-## Sécurité
+## Utilisation
 
-Pour une utilisation en production, il est recommandé de :
+1.  **Démarrer Windmill :**
 
-- Changer la clé secrète JWT.
-- Utiliser HTTPS.
-- Configurer un reverse proxy (comme Nginx) devant Windmill.
-- Utiliser un gestionnaire de secrets pour stocker les clés API et les mots de passe.
-- Mettre en place des politiques d'accès et des rôles pour les utilisateurs.
+    ```bash
+    # TODO: Ajouter les commandes pour démarrer Windmill
+    ```
+
+2.  **Importer les Applications, Scripts et Flows :**
+
+    *   Importer `apps/ml_pipeline_builder.json` dans Windmill.
+    *   Importer les scripts de `scripts/` dans Windmill.
+    *   Importer `flows/ml_pipeline_deployment.json` dans Windmill.
+
+3.  **Utiliser l'Application :**
+
+    *   Accéder à l'application "ML Pipeline Builder" dans l'interface Windmill.
+    *   Configurer le pipeline en remplissant le formulaire et en assemblant les nodes.
+    *   Cliquer sur "Déployer le Pipeline" pour lancer le déploiement.
+
+## Développement
+
+Pour modifier les applications, scripts ou flows :
+
+1.  Éditer les fichiers JSON/Python dans `apps/`, `scripts/` ou `flows/`.
+2.  Réimporter les fichiers modifiés dans Windmill.
+
+## TODO
+
+*   Ajouter les commandes pour démarrer Windmill.
+*   Ajouter plus d'exemples d'applications, de scripts et de flows.
+*   Implémenter la gestion des versions des playbooks.
+*   Implémenter l'assemblage fractal de pipelines.

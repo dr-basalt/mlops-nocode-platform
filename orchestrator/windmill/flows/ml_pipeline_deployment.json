@@ -1,0 +1,57 @@
+{
+  "name": "ml_pipeline_deployment",
+  "title": "Déploiement de Pipeline ML",
+  "description": "Flow pour déployer un pipeline ML",
+  "version": "1.0.0",
+  "author": "dr-basalt",
+  "trigger": {
+    "type": "manual"
+  },
+  "steps": [
+    {
+      "name": "validate_config",
+      "type": "script",
+      "script": "scripts/validate_pipeline_config.py",
+      "inputs": {
+        "pipeline_config": "{{ inputs.pipeline_config }}",
+        "pipeline_nodes": "{{ inputs.pipeline_nodes }}"
+      }
+    },
+    {
+      "name": "generate_terraform",
+      "type": "script",
+      "script": "scripts/generate_terraform.py",
+      "inputs": {
+        "pipeline_config": "{{ inputs.pipeline_config }}",
+        "pipeline_nodes": "{{ inputs.pipeline_nodes }}"
+      }
+    },
+    {
+      "name": "deploy_infrastructure",
+      "type": "script",
+      "script": "scripts/deploy_infrastructure.py",
+      "inputs": {
+        "terraform_code": "{{ steps.generate_terraform.outputs.terraform_code }}"
+      }
+    },
+    {
+      "name": "deploy_pipeline",
+      "type": "script",
+      "script": "scripts/deploy_pipeline.py",
+      "inputs": {
+        "pipeline_config": "{{ inputs.pipeline_config }}",
+        "pipeline_nodes": "{{ inputs.pipeline_nodes }}"
+      }
+    },
+    {
+      "name": "notify_completion",
+      "type": "script",
+      "script": "scripts/notify_completion.py",
+      "inputs": {
+        "pipeline_id": "{{ steps.deploy_pipeline.outputs.pipeline_id }}",
+        "status": "{{ steps.deploy_pipeline.outputs.status }}",
+        "message": "{{ steps.deploy_pipeline.outputs.message }}"
+      }
+    }
+  ]
+}

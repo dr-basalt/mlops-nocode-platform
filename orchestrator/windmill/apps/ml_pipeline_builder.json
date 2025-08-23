@@ -1,0 +1,135 @@
+{
+  "name": "ml_pipeline_builder",
+  "title": "ML Pipeline Builder",
+  "description": "Application pour construire et déployer des pipelines ML",
+  "version": "1.0.0",
+  "author": "dr-basalt",
+  "components": [
+    {
+      "type": "form",
+      "name": "pipeline_config",
+      "title": "Configuration du Pipeline",
+      "fields": [
+        {
+          "name": "pipeline_name",
+          "type": "text",
+          "label": "Nom du Pipeline",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "textarea",
+          "label": "Description"
+        },
+        {
+          "name": "target_platform",
+          "type": "select",
+          "label": "Plateforme Cible",
+          "options": [
+            {"value": "k3s-local", "label": "K3s Local"},
+            {"value": "exoscale", "label": "Exoscale"},
+            {"value": "vastai", "label": "Vast.ai"},
+            {"value": "runpod", "label": "RunPod"}
+          ],
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "node_editor",
+      "name": "pipeline_nodes",
+      "title": "Éditeur de Nodes",
+      "nodeTypes": [
+        {
+          "type": "data_source",
+          "label": "Source de Données",
+          "icon": "database",
+          "fields": [
+            {
+              "name": "source_type",
+              "type": "select",
+              "label": "Type de Source",
+              "options": [
+                {"value": "s3", "label": "S3"},
+                {"value": "database", "label": "Base de Données"},
+                {"value": "api", "label": "API"}
+              ]
+            },
+            {
+              "name": "connection_details",
+              "type": "textarea",
+              "label": "Détails de Connexion"
+            }
+          ]
+        },
+        {
+          "type": "preprocessing",
+          "label": "Prétraitement",
+          "icon": "filter",
+          "fields": [
+            {
+              "name": "operations",
+              "type": "textarea",
+              "label": "Opérations de Prétraitement"
+            }
+          ]
+        },
+        {
+          "type": "model",
+          "label": "Modèle",
+          "icon": "brain",
+          "fields": [
+            {
+              "name": "model_type",
+              "type": "select",
+              "label": "Type de Modèle",
+              "options": [
+                {"value": "training", "label": "Entraînement"},
+                {"value": "fine_tuning", "label": "Fine-tuning"},
+                {"value": "inference", "label": "Inférence"}
+              ]
+            },
+            {
+              "name": "model_details",
+              "type": "textarea",
+              "label": "Détails du Modèle"
+            }
+          ]
+        },
+        {
+          "type": "deployment",
+          "label": "Déploiement",
+          "icon": "cloud-upload",
+          "fields": [
+            {
+              "name": "deployment_type",
+              "type": "select",
+              "label": "Type de Déploiement",
+              "options": [
+                {"value": "api_endpoint", "label": "Point de terminaison API"},
+                {"value": "batch_processing", "label": "Traitement par lots"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "deploy_pipeline",
+      "label": "Déployer le Pipeline",
+      "script": "scripts/deploy_pipeline.py",
+      "inputs": [
+        {
+          "name": "pipeline_config",
+          "from": "pipeline_config"
+        },
+        {
+          "name": "pipeline_nodes",
+          "from": "pipeline_nodes"
+        }
+      ]
+    }
+  ]
+}
