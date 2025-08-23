@@ -43,19 +43,36 @@ else
     exit 1
 fi
 
-log "Utilisation de $PIP_CMD pour l'installation des paquets Python"
+log "Utilisation de $PIP_CMD pour la gestion des paquets Python"
 
-# Installer psutil
-log "Installation de psutil..."
-$PIP_CMD install psutil
+# Créer un environnement virtuel
+VENV_PATH="$HOME/throttler-venv"
+log "Création de l'environnement virtuel dans $VENV_PATH..."
+python3 -m venv "$VENV_PATH"
+
+# Activer l'environnement virtuel
+log "Activation de l'environnement virtuel..."
+source "$VENV_PATH/bin/activate"
+
+# Mettre à jour pip dans l'environnement virtuel
+log "Mise à jour de pip..."
+pip install --upgrade pip
+
+# Installer psutil dans l'environnement virtuel
+log "Installation de psutil dans l'environnement virtuel..."
+pip install psutil
 
 # Vérifier l'installation
 if python3 -c "import psutil" 2>/dev/null; then
-    log "psutil installé avec succès"
+    log "psutil installé avec succès dans l'environnement virtuel"
 else
-    error "Échec de l'installation de psutil"
+    error "Échec de l'installation de psutil dans l'environnement virtuel"
     exit 1
 fi
+
+# Copier le script cpu_throttler.py dans l'environnement virtuel pour qu'il puisse trouver psutil
+log "Copie du script cpu_throttler.py dans l'environnement virtuel..."
+cp /home/coder/cpu_throttler.py "$VENV_PATH/bin/"
 
 # Créer un alias pour activer le throttling par défaut
 log "Configuration de l'alias pour le throttling..."
@@ -63,11 +80,30 @@ echo "" >> ~/.bashrc
 echo "# Alias pour le throttling CPU/load average" >> ~/.bashrc
 echo "alias throttle-on='export THROTTLE_DISABLE=false'" >> ~/.bashrc
 echo "alias throttle-off='export THROTTLE_DISABLE=true'" >> ~/.bashrc
+echo "alias throttle-run='$VENV_PATH/bin/python $VENV_PATH/bin/cpu_throttler.py'" >> ~/.bashrc
 echo "" >> ~/.bashrc
 
 # Activer le throttling par défaut
 log "Activation du throttling par défaut..."
 echo "export THROTTLE_DISABLE=false" >> ~/.bashrc
+
+# Créer un script wrapper pour exécuter des commandes avec throttling
+log "Création du script wrapper..."
+cat > "$VENV_PATH/bin/throttle-wrapper.sh" << 'EOF'
+#!/bin/bash
+# Script wrapper pour exécuter des commandes avec throttling
+
+# Activer l'environnement virtuel
+source "$HOME/throttler-venv/bin/activate"
+
+# Vérifier les ressources
+python "$HOME/throttler-venv/bin/cpu_throttler.py" --cpu-threshold 85 --load-avg-threshold 5 --max-wait-time 10
+
+# Exécuter la commande demandée
+"$@"
+EOF
+
+chmod +x "$VENV_PATH/bin/throttle-wrapper.sh"
 
 log "Installation terminée avec succès !"
 
@@ -80,6 +116,10 @@ echo ""
 echo "Vous pouvez aussi utiliser les alias :"
 echo "  - throttle-on : Activer le throttling"
 echo "  - throttle-off : Désactiver le throttling"
+echo "  - throttle-run : Exécuter le script de monitoring"
+echo ""
+echo "Pour exécuter une commande avec throttling :"
+echo "  $HOME/throttler-venv/bin/throttle-wrapper.sh python3 votre_script.py"
 echo ""
 echo "Pour que les changements soient pris en compte, exécutez :"
 echo "  source ~/.bashrc"
