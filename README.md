@@ -4,6 +4,8 @@
 
 Ce projet contient un script Python pour contrôler la charge CPU et le load average pour éviter de dépasser les seuils définis. Cela permet d'éviter d'être limité par l'hébergeur pendant le développement.
 
+Le throttling peut être désactivé via la variable d'environnement `THROTTLE_DISABLE` pour les environnements de production.
+
 ## Fichiers
 
 - `cpu_throttler.py` : Script principal pour le contrôle de la charge CPU et du load average.
@@ -59,6 +61,21 @@ def my_operation(x, y):
 result = throttle_operation(my_operation, 10, 20, cpu_threshold=85.0, load_avg_threshold=5.0, verbose=True)
 ```
 
+### Désactiver le throttling
+
+Pour désactiver le throttling (par exemple, dans un environnement de production), définissez la variable d'environnement `THROTTLE_DISABLE` à `true` :
+
+```bash
+export THROTTLE_DISABLE=true
+python votre_script.py
+```
+
+Ou directement dans la commande :
+
+```bash
+THROTTLE_DISABLE=true python votre_script.py
+```
+
 ## Configuration
 
 Les paramètres par défaut sont définis dans le script :
@@ -67,6 +84,7 @@ Les paramètres par défaut sont définis dans le script :
 - `LOAD_AVG_THRESHOLD` : 6.0 (seuil de load average sur 5 minutes)
 - `CHECK_INTERVAL` : 0.1 (intervalle de vérification en secondes)
 - `MAX_WAIT_TIME` : 5.0 (temps d'attente maximum en secondes)
+- `THROTTLE_DISABLE` : false (le throttling est activé par défaut)
 
 Ces valeurs peuvent être modifiées directement dans le script ou passées en arguments lors de l'appel.
 

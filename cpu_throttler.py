@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Script pour contrôler la charge CPU et le load average pour éviter de dépasser les seuils.
+Peut être désactivé via la variable d'environnement THROTTLE_DISABLE.
 """
 
 import time
@@ -19,6 +20,9 @@ CHECK_INTERVAL = 0.1
 
 # Temps d'attente maximum (en secondes) pour une seule vérification
 MAX_WAIT_TIME = 5.0
+
+# Variable d'environnement pour désactiver le throttling
+THROTTLE_DISABLE = os.getenv("THROTTLE_DISABLE", "false").lower() in ("true", "1", "yes")
 
 
 def get_load_avg() -> float:
@@ -41,6 +45,7 @@ def wait_for_cpu_and_load_availability(
 ) -> None:
     """
     Attend que l'utilisation du CPU et le load average soient en dessous des seuils spécifiés.
+    Si THROTTLE_DISABLE est à "true", cette fonction ne fait rien.
 
     Args:
         cpu_threshold: Seuil d'utilisation CPU (en pourcentage).
@@ -49,6 +54,12 @@ def wait_for_cpu_and_load_availability(
         max_wait_time: Temps d'attente maximum (en secondes).
         verbose: Afficher des messages de debug.
     """
+    # Si le throttling est désactivé, ne rien faire
+    if THROTTLE_DISABLE:
+        if verbose:
+            print("Throttling is disabled via THROTTLE_DISABLE environment variable.")
+        return
+    
     start_time = time.time()
     while True:
         # Obtenir l'utilisation CPU
@@ -85,6 +96,7 @@ def throttle_operation(
 ):
     """
     Exécute une opération après avoir attendu que l'utilisation du CPU et le load average soient en dessous des seuils.
+    Si THROTTLE_DISABLE est à "true", l'opération est exécutée directement sans throttling.
 
     Args:
         operation: Fonction à exécuter.
@@ -99,6 +111,12 @@ def throttle_operation(
     Returns:
         Résultat de l'opération.
     """
+    # Si le throttling est désactivé, exécuter l'opération directement
+    if THROTTLE_DISABLE:
+        if verbose:
+            print("Throttling is disabled via THROTTLE_DISABLE environment variable. Executing operation directly.")
+        return operation(*args, **kwargs)
+    
     wait_for_cpu_and_load_availability(cpu_threshold, load_avg_threshold, check_interval, max_wait_time, verbose)
     return operation(*args, **kwargs)
 
@@ -116,6 +134,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("Monitoring CPU usage and load average...")
+    print(f"Throttling is {'disabled' if THROTTLE_DISABLE else 'enabled'}")
     try:
         while True:
             wait_for_cpu_and_load_availability(
