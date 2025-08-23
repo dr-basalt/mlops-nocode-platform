@@ -10,8 +10,25 @@ Le throttling peut être désactivé via la variable d'environnement `THROTTLE_D
 
 - `cpu_throttler.py` : Script principal pour le contrôle de la charge CPU et du load average.
 - `requirements.txt` : Dépendances nécessaires.
+- `install_throttler.sh` : Script pour installer les dépendances et configurer l'environnement.
 
 ## Installation
+
+### Méthode 1: Script d'installation automatique
+
+Exécutez le script d'installation :
+
+```bash
+chmod +x /home/coder/install_throttler.sh
+/home/coder/install_throttler.sh
+```
+
+Ce script :
+1. Installe `psutil` avec `pip`.
+2. Configure des alias `throttle-on` et `throttle-off` dans `~/.bashrc`.
+3. Active le throttling par défaut.
+
+### Méthode 2: Installation manuelle
 
 1.  Installer les dépendances :
 
@@ -74,6 +91,13 @@ Ou directement dans la commande :
 
 ```bash
 THROTTLE_DISABLE=true python votre_script.py
+```
+
+Avec le script d'installation, vous pouvez aussi utiliser les alias :
+
+```bash
+throttle-off  # Désactive le throttling
+throttle-on   # Active le throttling
 ```
 
 ## Configuration
