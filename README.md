@@ -1,12 +1,12 @@
-# CPU Throttler
+# CPU and Load Average Throttler
 
 ## Description
 
-Ce projet contient un script Python pour contrôler la charge CPU et éviter de dépasser 90% d'utilisation. Cela permet d'éviter d'être limité par l'hébergeur pendant le développement.
+Ce projet contient un script Python pour contrôler la charge CPU et le load average pour éviter de dépasser les seuils définis. Cela permet d'éviter d'être limité par l'hébergeur pendant le développement.
 
 ## Fichiers
 
-- `cpu_throttler.py` : Script principal pour le contrôle de la charge CPU.
+- `cpu_throttler.py` : Script principal pour le contrôle de la charge CPU et du load average.
 - `requirements.txt` : Dépendances nécessaires.
 
 ## Installation
@@ -21,7 +21,7 @@ Ce projet contient un script Python pour contrôler la charge CPU et éviter de 
 
 ### En tant que script autonome
 
-Pour surveiller l'utilisation du CPU en continu :
+Pour surveiller l'utilisation du CPU et le load average en continu :
 
 ```bash
 python cpu_throttler.py
@@ -29,7 +29,8 @@ python cpu_throttler.py
 
 Options disponibles :
 
-- `--threshold` : Seuil d'utilisation CPU (par défaut 90.0).
+- `--cpu-threshold` : Seuil d'utilisation CPU (par défaut 90.0).
+- `--load-avg-threshold` : Seuil de load average sur 5 minutes (par défaut 6.0).
 - `--check-interval` : Intervalle de temps entre les vérifications (par défaut 0.1).
 - `--max-wait-time` : Temps d'attente maximum (par défaut 5.0).
 - `--verbose` : Mode verbeux.
@@ -37,25 +38,25 @@ Options disponibles :
 Exemple :
 
 ```bash
-python cpu_throttler.py --threshold 85.0 --verbose
+python cpu_throttler.py --cpu-threshold 85.0 --load-avg-threshold 5.0 --verbose
 ```
 
 ### En tant que module
 
-Pour utiliser le limiteur de CPU dans vos propres scripts :
+Pour utiliser le limiteur de CPU et de load average dans vos propres scripts :
 
 ```python
-from cpu_throttler import wait_for_cpu_availability, throttle_operation
+from cpu_throttler import wait_for_cpu_and_load_availability, throttle_operation
 
-# Attendre que l'utilisation du CPU soit en dessous de 90%
-wait_for_cpu_availability(threshold=90.0, verbose=True)
+# Attendre que l'utilisation du CPU et le load average soient en dessous des seuils
+wait_for_cpu_and_load_availability(cpu_threshold=90.0, load_avg_threshold=6.0, verbose=True)
 
 # Exécuter une opération avec throttling
 def my_operation(x, y):
     # Opération intensive en CPU
     return x * y
 
-result = throttle_operation(my_operation, 10, 20, threshold=85.0, verbose=True)
+result = throttle_operation(my_operation, 10, 20, cpu_threshold=85.0, load_avg_threshold=5.0, verbose=True)
 ```
 
 ## Configuration
@@ -63,6 +64,7 @@ result = throttle_operation(my_operation, 10, 20, threshold=85.0, verbose=True)
 Les paramètres par défaut sont définis dans le script :
 
 - `CPU_THRESHOLD` : 90.0 (seuil d'utilisation CPU)
+- `LOAD_AVG_THRESHOLD` : 6.0 (seuil de load average sur 5 minutes)
 - `CHECK_INTERVAL` : 0.1 (intervalle de vérification en secondes)
 - `MAX_WAIT_TIME` : 5.0 (temps d'attente maximum en secondes)
 
