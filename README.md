@@ -163,6 +163,22 @@ throttle-run
 
 Le script utilise le module `logging` de Python pour afficher des messages d'information et de débogage. Le niveau de logging peut être configuré via la variable d'environnement `LOG_LEVEL`.
 
-## TODO
+## Tests
 
-- Ajouter des tests unitaires.
+Pour exécuter les tests unitaires, assurez-vous d'avoir installé `pytest` dans votre environnement virtuel :
+
+```bash
+$HOME/throttler-venv/bin/pip install pytest
+```
+
+Ensuite, exécutez les tests avec la commande suivante :
+
+```bash
+$HOME/throttler-venv/bin/python -m pytest tests/test_cpu_throttler.py -v
+```
+
+Vous pouvez également exécuter les tests directement avec `unittest` :
+
+```bash
+$HOME/throttler-venv/bin/python -m unittest tests/test_cpu_throttler.py -v
+```
