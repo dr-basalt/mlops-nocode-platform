@@ -61,7 +61,7 @@ Flow pour orchestrer le déploiement d'un pipeline ML.
 1.  **Démarrer Windmill :**
 
     ```bash
-    # TODO: Ajouter les commandes pour démarrer Windmill
+    docker-compose up -d
     ```
 
 2.  **Importer les Applications, Scripts et Flows :**
@@ -85,7 +85,6 @@ Pour modifier les applications, scripts ou flows :
 
 ## TODO
 
-*   Ajouter les commandes pour démarrer Windmill.
 *   Ajouter plus d'exemples d'applications, de scripts et de flows.
 *   Implémenter la gestion des versions des playbooks.
 *   Implémenter l'assemblage fractal de pipelines.
