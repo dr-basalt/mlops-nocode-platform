@@ -7,22 +7,29 @@ Peut être désactivé via la variable d'environnement THROTTLE_DISABLE.
 import time
 import psutil
 import os
+import logging
 from typing import Optional
 
+# Configuration des paramètres via des variables d'environnement
 # Seuil d'utilisation CPU au-delà duquel on ralentit
-CPU_THRESHOLD = 90.0
+CPU_THRESHOLD = float(os.getenv("CPU_THRESHOLD", "90.0"))
 
 # Seuil de load average 5 minutes au-delà duquel on ralentit
-LOAD_AVG_THRESHOLD = 6.0
+LOAD_AVG_THRESHOLD = float(os.getenv("LOAD_AVG_THRESHOLD", "6.0"))
 
 # Intervalle de temps entre les vérifications (en secondes)
-CHECK_INTERVAL = 0.1
+CHECK_INTERVAL = float(os.getenv("CHECK_INTERVAL", "0.1"))
 
 # Temps d'attente maximum (en secondes) pour une seule vérification
-MAX_WAIT_TIME = 5.0
+MAX_WAIT_TIME = float(os.getenv("MAX_WAIT_TIME", "5.0"))
 
 # Variable d'environnement pour désactiver le throttling
 THROTTLE_DISABLE = os.getenv("THROTTLE_DISABLE", "false").lower() in ("true", "1", "yes")
+
+# Configuration du logging
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
 
 def get_load_avg() -> float:
@@ -57,7 +64,7 @@ def wait_for_cpu_and_load_availability(
     # Si le throttling est désactivé, ne rien faire
     if THROTTLE_DISABLE:
         if verbose:
-            print("Throttling is disabled via THROTTLE_DISABLE environment variable.")
+            logger.info("Throttling is disabled via THROTTLE_DISABLE environment variable.")
         return
     
     start_time = time.time()
@@ -71,17 +78,17 @@ def wait_for_cpu_and_load_availability(
         # Si l'utilisation CPU et le load average sont en dessous des seuils, on sort de la boucle
         if cpu_percent < cpu_threshold and load_avg_5min < load_avg_threshold:
             if verbose:
-                print(f"CPU usage: {cpu_percent:.2f}% - Load average (5min): {load_avg_5min:.2f} - Below thresholds")
+                logger.info(f"CPU usage: {cpu_percent:.2f}% - Load average (5min): {load_avg_5min:.2f} - Below thresholds")
             break
         
         # Si le temps d'attente maximum est dépassé, on sort de la boucle
         if time.time() - start_time > max_wait_time:
             if verbose:
-                print(f"Max wait time exceeded. CPU usage: {cpu_percent:.2f}% - Load average (5min): {load_avg_5min:.2f}")
+                logger.warning(f"Max wait time exceeded. CPU usage: {cpu_percent:.2f}% - Load average (5min): {load_avg_5min:.2f}")
             break
         
         if verbose:
-            print(f"CPU usage: {cpu_percent:.2f}% - Load average (5min): {load_avg_5min:.2f} - Waiting...")
+            logger.debug(f"CPU usage: {cpu_percent:.2f}% - Load average (5min): {load_avg_5min:.2f} - Waiting...")
 
 
 def throttle_operation(
@@ -114,7 +121,7 @@ def throttle_operation(
     # Si le throttling est désactivé, exécuter l'opération directement
     if THROTTLE_DISABLE:
         if verbose:
-            print("Throttling is disabled via THROTTLE_DISABLE environment variable. Executing operation directly.")
+            logger.info("Throttling is disabled via THROTTLE_DISABLE environment variable. Executing operation directly.")
         return operation(*args, **kwargs)
     
     wait_for_cpu_and_load_availability(cpu_threshold, load_avg_threshold, check_interval, max_wait_time, verbose)

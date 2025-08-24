@@ -141,18 +141,28 @@ $HOME/throttler-venv/bin/throttle-wrapper.sh python3 votre_script.py
 
 ## Configuration
 
-Les paramètres par défaut sont définis dans le script :
+Les paramètres par défaut sont définis dans le script, mais peuvent être configurés via des variables d'environnement :
 
-- `CPU_THRESHOLD` : 90.0 (seuil d'utilisation CPU)
-- `LOAD_AVG_THRESHOLD` : 6.0 (seuil de load average sur 5 minutes)
-- `CHECK_INTERVAL` : 0.1 (intervalle de vérification en secondes)
-- `MAX_WAIT_TIME` : 5.0 (temps d'attente maximum en secondes)
-- `THROTTLE_DISABLE` : false (le throttling est activé par défaut)
+- `CPU_THRESHOLD` : Seuil d'utilisation CPU (par défaut 90.0).
+- `LOAD_AVG_THRESHOLD` : Seuil de load average sur 5 minutes (par défaut 6.0).
+- `CHECK_INTERVAL` : Intervalle de temps entre les vérifications (par défaut 0.1).
+- `MAX_WAIT_TIME` : Temps d'attente maximum (par défaut 5.0).
+- `THROTTLE_DISABLE` : Désactiver le throttling (par défaut false).
+- `LOG_LEVEL` : Niveau de logging (par défaut INFO).
 
-Ces valeurs peuvent être modifiées directement dans le script ou passées en arguments lors de l'appel.
+Exemple :
+
+```bash
+export CPU_THRESHOLD=85.0
+export LOAD_AVG_THRESHOLD=5.0
+export LOG_LEVEL=DEBUG
+throttle-run
+```
+
+## Logging
+
+Le script utilise le module `logging` de Python pour afficher des messages d'information et de débogage. Le niveau de logging peut être configuré via la variable d'environnement `LOG_LEVEL`.
 
 ## TODO
 
-- Ajouter la possibilité de configurer les paramètres via des variables d'environnement.
-- Implémenter un mécanisme de logging.
 - Ajouter des tests unitaires.
