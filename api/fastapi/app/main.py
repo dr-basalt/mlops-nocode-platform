@@ -12,6 +12,9 @@ from datetime import datetime
 # Importer les configurations
 from app.core.config import settings
 
+# Importer les routeurs
+from app.routers.autopilot_engine import router as autopilot_router
+
 # Créer l'instance de l'application FastAPI
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -27,6 +30,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Inclure les routeurs
+app.include_router(autopilot_router)
 
 # Stockage en mémoire pour les statuts de pipeline (à remplacer par une base de données en production)
 pipeline_statuses: Dict[str, dict] = {}
