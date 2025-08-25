@@ -1,0 +1,150 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: litellm
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+  namespace: litellm
+data:
+  config.yaml: |
+    model_list:
+      # Modèles OpenAI (fallback)
+      - model_name: gpt-4
+        litellm_params:
+          model: openai/gpt-4
+          api_key: "sk-1234567890abcdef"
+      - model_name: gpt-3.5-turbo
+        litellm_params:
+          model: openai/gpt-3.5-turbo
+          api_key: "sk-1234567890abcdef"
+      
+      # Modèles Claude (fallback)
+      - model_name: claude-2
+        litellm_params:
+          model: anthropic/claude-2
+          api_key: "sk-ant-1234567890abcdef"
+      
+      # Modèles Hugging Face (fallback)
+      - model_name: llama2
+        litellm_params:
+          model: huggingface/llama2
+          api_base: "http://llama2-api:8000"
+      
+      # Modèles Ollama (local)
+      - model_name: qwen3:4b
+        litellm_params:
+          model: ollama/qwen3:4b
+          api_base: "http://ollama-service:11434"
+      - model_name: llama3.2:3b
+        litellm_params:
+          model: ollama/llama3.2:3b
+          api_base: "http://ollama-service:11434"
+      - model_name: qwen3-coder:30b-a3b
+        litellm_params:
+          model: ollama/qwen3-coder:30b-a3b
+          api_base: "http://ollama-service:11434"
+      - model_name: codellama:34b
+        litellm_params:
+          model: ollama/codellama:34b
+          api_base: "http://ollama-service:11434"
+      
+      # Modèles VLLM (haute performance)
+      - model_name: qwen3-coder:30b-a3b-vllm
+        litellm_params:
+          model: vllm/qwen3-coder:30b-a3b
+          api_base: "http://vllm-service:8000"
+      - model_name: codellama:34b-vllm
+        litellm_params:
+          model: vllm/codellama:34b
+          api_base: "http://vllm-service:8000"
+      
+      # Modèles OpenRouter (fallback API)
+      - model_name: qwen3:30b-a3b-openrouter
+        litellm_params:
+          model: openrouter/qwen/qwen3-30b-a3b
+          api_key: "sk-or-1234567890abcdef"
+      - model_name: claude-3.5-sonnet-openrouter
+        litellm_params:
+          model: openrouter/anthropic/claude-3.5-sonnet
+          api_key: "sk-or-1234567890abcdef"
+      
+      # Modèles Vision
+      - model_name: qwen3-vl:32b
+        litellm_params:
+          model: ollama/qwen3-vl:32b
+          api_base: "http://ollama-service:11434"
+      - model_name: llama3.2-vision:11b
+        litellm_params:
+          model: ollama/llama3.2-vision:11b
+          api_base: "http://ollama-service:11434"
+    
+    # Configuration du routeur intelligent
+    router_settings:
+      # Modèles pour différentes tâches
+      task_models:
+        lightweight: ['qwen3:4b', 'llama3.2:3b']
+        code_heavy: ['qwen3-coder:30b-a3b', 'codellama:34b']
+        architecture: ['qwen3:30b-a3b', 'mixtral:8x22b']
+        ui_vision: ['qwen3-vl:32b', 'llama3.2-vision:11b']
+        complex_reasoning: ['qwen3:235b-a22b', 'claude-3.5-sonnet']
+      
+      # Fallback automatique
+      fallbacks:
+        - model_name: qwen3-coder:30b-a3b
+          fallbacks: ['qwen3-coder:30b-a3b-vllm', 'qwen3:30b-a3b-openrouter']
+        - model_name: codellama:34b
+          fallbacks: ['codellama:34b-vllm', 'gpt-3.5-turbo']
+    
+    general_settings:
+      master_key: "sk-1234567890abcdef"
+      # Activer le routage intelligent
+      enable_smart_routing: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm-proxy
+  namespace: litellm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm-proxy
+  template:
+    metadata:
+      labels:
+        app: litellm-proxy
+    spec:
+      containers:
+      - name: litellm-proxy
+        image: ghcr.io/berriai/litellm:main-latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: LITELLM_CONFIG_PATH
+          value: "/app/config.yaml"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+      volumes:
+      - name: config-volume
+        configMap:
+          name: litellm-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm-proxy
+  namespace: litellm
+spec:
+  selector:
+    app: litellm-proxy
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP

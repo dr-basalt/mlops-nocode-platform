@@ -1,0 +1,170 @@
+{
+  "name": "meta_blueprint_generator",
+  "summary": "Meta Blueprint Generator",
+  "description": "Application pour générer des blueprints de projets via l'Autopilot Engine",
+  "modules": [
+    {
+      "name": "main",
+      "summary": "Module principal",
+      "scripts": [
+        {
+          "name": "generate_project",
+          "summary": "Génère un projet à partir d'un blueprint",
+          "language": "python3",
+          "code": "import wmill\nimport json\n\ndef main(blueprint: str, target_repo: str, stack: str = None, ui_system: str = 'shadcn', autopilot: bool = True, deploy: bool = False):\n    \"\"\"\n    Génère un projet à partir d'un blueprint en utilisant l'Autopilot Engine.\n    \n    Args:\n        blueprint (str): Description du projet à générer\n        target_repo (str): URL du repository cible\n        stack (str, optional): Stack technologique\n        ui_system (str, optional): Système UI (shadcn, tailwind, etc.)\n        autopilot (bool, optional): Activer le mode autopilot\n        deploy (bool, optional): Déployer automatiquement\n    \n    Returns:\n        dict: Résultat de la génération\n    \"\"\"\n    # Appel à l'API de l'Autopilot Engine\n    url = 'http://api-gateway:8000/api/v1/autopilot/execute-blueprint'\n    \n    payload = {\n        \"blueprint\": blueprint,\n        \"target_repo\": target_repo,\n        \"stack\": stack,\n        \"ui_system\": ui_system,\n        \"autopilot\": autopilot,\n        \"deploy\": deploy\n    }\n    \n    # Envoi de la requête\n    import httpx\n    response = httpx.post(url, json=payload, timeout=300.0)\n    \n    if response.status_code == 200:\n        return response.json()\n    else:\n        raise Exception(f\"Erreur lors de la génération du projet: {response.text}\")\n",
+          "inputs": [
+            {
+              "name": "blueprint",
+              "type": "string",
+              "description": "Description du projet à générer"
+            },
+            {
+              "name": "target_repo",
+              "type": "string",
+              "description": "URL du repository cible"
+            },
+            {
+              "name": "stack",
+              "type": "string",
+              "description": "Stack technologique"
+            },
+            {
+              "name": "ui_system",
+              "type": "string",
+              "description": "Système UI (shadcn, tailwind, etc.)"
+            },
+            {
+              "name": "autopilot",
+              "type": "boolean",
+              "description": "Activer le mode autopilot"
+            },
+            {
+              "name": "deploy",
+              "type": "boolean",
+              "description": "Déployer automatiquement"
+            }
+          ],
+          "outputs": [
+            {
+              "name": "result",
+              "type": "object",
+              "description": "Résultat de la génération"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "name": "generate_and_deploy",
+      "summary": "Génère et déploie un projet",
+      "description": "Workflow pour générer un projet à partir d'un blueprint et le déployer automatiquement",
+      "modules": [
+        "main"
+      ],
+      "steps": [
+        {
+          "name": "generate_project",
+          "module": "main",
+          "function": "generate_project",
+          "inputs": {
+            "blueprint": "${inputs.blueprint}",
+            "target_repo": "${inputs.target_repo}",
+            "stack": "${inputs.stack}",
+            "ui_system": "${inputs.ui_system}",
+            "autopilot": true,
+            "deploy": true
+          }
+        }
+      ],
+      "inputs": [
+        {
+          "name": "blueprint",
+          "type": "string",
+          "description": "Description du projet à générer"
+        },
+        {
+          "name": "target_repo",
+          "type": "string",
+          "description": "URL du repository cible"
+        },
+        {
+          "name": "stack",
+          "type": "string",
+          "description": "Stack technologique"
+        },
+        {
+          "name": "ui_system",
+          "type": "string",
+          "description": "Système UI (shadcn, tailwind, etc.)"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "result",
+          "type": "object",
+          "description": "Résultat de la génération et du déploiement"
+        }
+      ]
+    }
+  ],
+  "ui": {
+    "name": "Meta Blueprint Generator",
+    "description": "Générez des projets complets à partir de descriptions simples",
+    "icon": "rocket",
+    "color": "blue",
+    "layout": [
+      {
+        "type": "form",
+        "title": "Générateur de Projet",
+        "fields": [
+          {
+            "name": "blueprint",
+            "label": "Description du Projet",
+            "type": "textarea",
+            "placeholder": "Décrivez le projet que vous souhaitez générer...",
+            "required": true
+          },
+          {
+            "name": "target_repo",
+            "label": "Repository Cible",
+            "type": "text",
+            "placeholder": "https://github.com/user/new-project",
+            "required": true
+          },
+          {
+            "name": "stack",
+            "label": "Stack Technologique",
+            "type": "select",
+            "options": [
+              "nextjs,fastapi,postgresql",
+              "react,express,mongodb",
+              "vue,nodejs,mysql",
+              "svelte,flask,sqlite"
+            ],
+            "placeholder": "Sélectionnez une stack"
+          },
+          {
+            "name": "ui_system",
+            "label": "Système UI",
+            "type": "select",
+            "options": [
+              "shadcn",
+              "tailwind",
+              "bootstrap",
+              "material-ui"
+            ],
+            "default": "shadcn"
+          }
+        ]
+      },
+      {
+        "type": "button",
+        "label": "Générer et Déployer",
+        "action": "generate_and_deploy",
+        "color": "primary"
+      }
+    ]
+  }
+}
